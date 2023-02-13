@@ -4,6 +4,7 @@ import subprocess
 import optparse
 import re
 
+
 def get_arguments():
     parser = optparse.OptionParser()
     parser.add_option("-i", "--interface", dest="interface", help="Interface to change MAC address")
@@ -18,31 +19,32 @@ def get_arguments():
 
 def change_mac(interface, new_mac):
     print("[+] Changing MAC address for " + interface + " to " + new_mac)
-    subprocess.call("ifconfig eth0 down", shell=True)
-    subprocess.call("ifconfig eth0 hw ether 00:11:33:44:55:22", shell=True)
-    subprocess.call("ifconfig eth0 up", shell=True)
+    subprocess.call(["ifconfig", interface, "down"])
+    subprocess.call(["ifconfig", interface, "hw", "ether", new_mac])
+    subprocess.call(["ifconfig", interface, "up"])
+
 
 def current_mac(interface):
     ifconfig_result = subprocess.check_output(["ifconfig", interface])
-    mac_regexp = re.search(r"\w\w:\w\w:\w\w:\w\w:\w\w:\w\w:\w\w", ifconfig_result)
+    current_mac = re.search(r"\w\w:\w\w:\w\w:\w\w:\w\w:\w\w", ifconfig_result.decode("UTF-8"))
 
-    if mac_regexp:
-        return mac_regexp.group(0)
+    if current_mac:
+        return current_mac.group(0)
     else:
         print("MAC address was not found!")
 
+
 options = get_arguments()
 
-#get current MAC address
+# get current MAC address
 mac = current_mac(options.interface)
-print("Current MAC address:" + str(mac))
+print("Current MAC address => " + str(mac))
 
-#change MAC address
+# change MAC address
 change_mac(options.interface, options.new_mac)
 mac = current_mac(options.interface)
 
 if mac == options.new_mac:
-    print("[+] MAC address was changed successfully to : " + mac)
+    print("[+] MAC address was changed successfully to => " + mac)
 else:
     print("[-] MAC address was not changed")
-
